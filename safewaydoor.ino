@@ -1,9 +1,22 @@
 #include <Servo.h>
 
-Servo doorServo;
-const int servoPin = 13;
-const int trigPin = 3;
-const int echoPin = 2;
+Servo doorServo_left;
+Servo doorServo_right;
+
+// servos for the door 
+const int servoPin_left = 13;
+const int servoPin_right = 12;
+
+// front sensor & back sensor
+const int trigPin_front = 3;
+const int echoPin_front = 2;
+
+const int trigPin_back = 5;
+const int echoPin_back = 4;
+
+// misc variables
+const int maxDistance = 20; //cm 
+const int minDistance = 2; //cm 
 
 bool isOpen = false;     // current state of the door
 int zeroReading = 0;     // useful to ensure nothing is truly there infront of the sensor
@@ -12,10 +25,11 @@ int zeroReading = 0;     // useful to ensure nothing is truly there infront of t
 void setup() 
 {
   Serial.begin(9600);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  doorServo.attach(servoPin);
-  doorServo.write(0);
+  pinMode(trigPin_front, OUTPUT);
+  pinMode(echoPin_front, INPUT);
+//doorServo_right.attach(servoPin_right);
+  doorServo_left.attach(servoPin_left);
+  doorServo_left.write(0);
 }
 
 // pre: 
@@ -25,7 +39,7 @@ void openDoor() {
   { 
     for (int pos = 0; pos <= 90; pos++) 
     {
-      doorServo.write(pos);
+      doorServo_left.write(pos);
       delay(28); 
       delayMicroseconds(222); 
     }
@@ -40,7 +54,7 @@ void closeDoor() {
   {
     for (int pos = 90; pos >= 0; pos--) 
     {
-      doorServo.write(pos);
+      doorServo_left.write(pos);
       delay(28); 
       delayMicroseconds(222); 
     }
@@ -51,12 +65,12 @@ void closeDoor() {
 // vibe coded, don't question this. it gives the distance accurately. trust me
 float getDistance() 
 {
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trigPin_front, LOW);
   delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(trigPin_front, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  long duration = pulseIn(echoPin, HIGH, 30000); // 30ms timeout to prevent hanging
+  digitalWrite(trigPin_front, LOW);
+  long duration = pulseIn(echoPin_front, HIGH, 30000); // 30ms timeout to prevent hanging
   return duration / 58.0;
 }
 
@@ -64,7 +78,7 @@ void loop()
 {
   float distance = getDistance();
 
-  if (distance > 2 && distance <= 20) 
+  if (distance > minDistance && distance <= maxDistance) 
   { 
     zeroReading = 0;  //we reset this because we do see something
     openDoor();           

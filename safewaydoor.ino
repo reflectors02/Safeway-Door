@@ -34,7 +34,8 @@ void setup()
 
 // pre: 
 // post: Open the door by 90 degrees, Mark isOpen to true. Total delay should be 2.54 second, 28.222ms/degree.  
-void openDoor() {
+void openDoor() 
+{
   if (!isOpen) 
   { 
     for (int pos = 0; pos <= 90; pos++) 
@@ -49,7 +50,8 @@ void openDoor() {
 
 // pre: 
 // post: Close the door revert to 0 degree, Mark isOpen to false. Total delay should be 2.54 second, 28.222ms/degree.  
-void closeDoor() {
+void closeDoor() 
+{
   if (isOpen) 
   {
     for (int pos = 90; pos >= 0; pos--) 

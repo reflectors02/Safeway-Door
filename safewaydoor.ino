@@ -22,6 +22,7 @@ const int minDistance = 0;  // 20mm = 2cm
 bool isOpen = false;      // current state of the door
 int zeroReading = 0;      // useful to ensure nothing is truly there infront of the sensor
 int minZeroReading = 20;  // because the sensor has inherent issues that can cause it to see nothing when there is something
+int curr_angle = 0;       // will be used later when we have to try to abort a closing sequence. 
 
 void setup() 
 {
@@ -55,9 +56,16 @@ void setup()
 
   Serial.println(F("Both Sensors Online: Front (0x30), Back (0x31)"));
 
-//doorServo_right.attach(servoPin_right);
+  delay(500);
+
+  doorServo_right.attach(servoPin_right);
+  doorServo_right.write(0);
+  
+  delay(500);
+
   doorServo_left.attach(servoPin_left);
   doorServo_left.write(0);
+
 }
 
 // pre: 
@@ -69,7 +77,7 @@ void openDoor()
     for (int pos = 0; pos <= 90; pos++) 
     {
       doorServo_left.write(pos);
-      //doorServo_right.write(-pos);
+      doorServo_right.write(pos);
       delay(28); 
       delayMicroseconds(222); 
     }
@@ -79,6 +87,7 @@ void openDoor()
 
 // pre: 
 // post: Close the door revert to 0 degree, Mark isOpen to false. Total delay should be 2.54 second, 28.222ms/degree.  
+//       Both doors should be closed
 void closeDoor() 
 {
   if (isOpen) 
@@ -87,7 +96,7 @@ void closeDoor()
     for (int pos = 90; pos >= 0; pos--) 
     {
       doorServo_left.write(pos);
-      //doorServo_right.write(-pos);
+      doorServo_right.write(pos);
       delay(28); 
       delayMicroseconds(222); 
     }
@@ -163,13 +172,18 @@ void loop()
   if(distance_front > 20000){fixSensorHang(sensor_front);}
   if(distance_back > 20000){fixSensorHang(sensor_back);}
 
-  if ((distance_front > minDistance && distance_front <= maxDistance) || (distance_back > minDistance && distance_back <= maxDistance)) 
+  if ((distance_front > minDistance && distance_front <= maxDistance)) 
   { 
     zeroReading = 0;  //we reset this because we do see something
     openDoor();           
   } 
 
-  else 
+  else if(distance_back > minDistance && distance_back <= maxDistance)
+  {
+    // do nothing
+  }
+
+  else
   {
     zeroReading++;  
     
